@@ -1,86 +1,92 @@
-r, c, t = map(int, input().split())
+'''
+    공기청정기는 항상 1번 열에 설치되어 있고 크기는 두행을 차지
+    공기청정기가 설치안된 칸에는 미세먼지가 있고 그 칸에는 미세먼지 양이 들어있따
+    1초동안 일어나는 일
+        1. 미세먼지가 확산된다, 확산은 미세먼지가 있는 모든 칸에서 동시에 일어난다
+            미세먼지가 있는 칸에서 인접한 방향으로 확산 BFS?
+            인접한 방향에 공기청정기가 있거나 칸이 없으면 그 방향으로는 확산이 일어나지 않는다.
+            확산되는 양은 그 칸에있는 미세먼지//5 이다.
+            확산 원인 칸에 남아있는 미세먼지의 양은 Ar,c - (Ar,c/5)×(확산된 방향의 개수) 이다.
+        2. 공기청정기가 작동한다.
+            위쪽 공기청정기의 바람은 반시계 순회, 아래쪽 공기청정기의 바람은 시계 순회
+            바람이 불면 미세먼지가 바람 방향대로 한 칸씩 이동
+            공기청정기에서 부는 바람은 미세먼지가 없는 바람이고, 공기청정기로 들어간 미세먼지는 모두 정화된다.
+'''
 
-arr = [list(map(int, input().split())) for _ in range(r)]
+import sys
 
-up = -1
-down = -1
-# 공기 청정기 위치 찾기
-for i in range(r):
-    if arr[i][0] == -1:
-        up = i
-        down = i + 1
+input = sys.stdin.readline
+
+R, C, T = map(int, input().split())
+board = [list(map(int, input().split())) for _ in range(R)]
+cleaner = []
+dust_list = []
+
+for r in range(R):
+    if board[r][0] == -1:
+        cleaner.append(r)
+        cleaner.append(r+1)
         break
+    
 
-# 미세먼지 확산
-def spread():
-    dx = [-1, 0, 0, 1]
-    dy = [0, -1, 1, 0]
-
-    tmp_arr = [[0] * c for _ in range(r)]
-    for i in range(r):
-        for j in range(c):
-            if arr[i][j] != 0 and arr[i][j] != -1:
+for t in range(T):
+    tmp_list = [[0]*C for _ in range(R)]
+    for i in range(R):
+        for j in range(C):
+            if board[i][j] != 0 and board[i][j] != -1:
                 tmp = 0
-                for k in range(4):
-                    nx = dx[k] + i
-                    ny = dy[k] + j
-                    if 0 <= nx < r and 0 <= ny < c and arr[nx][ny] != -1:
-                        tmp_arr[nx][ny] += arr[i][j] // 5
-                        tmp += arr[i][j] // 5
-                arr[i][j] -= tmp
+                for dx, dy in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
+                    di = i+dx
+                    dj = j+dy
+                    if 0 <=di< R and 0<=dj<C:
+                        if board[di][dj] != -1:
+                            tmp_list[di][dj] += board[i][j] // 5
+                            tmp += board[i][j] // 5
+                board[i][j] -= tmp
 
-    for i in range(r):
-        for j in range(c):
-            arr[i][j] += tmp_arr[i][j]
+    for i in range(R):
+        for j in range(C):
+            board[i][j] += tmp_list[i][j]
 
-# 공기청정기 위쪽 이동
-def air_up():
-    dx = [0, -1, 0, 1]
-    dy = [1, 0, -1, 0]
-    direct = 0
-    before = 0
-    x, y = up, 1
+    
+    up_x, up_y = cleaner[0], 1
+    down_x, down_y = cleaner[1], 1
+
+    up_dx = [0, -1, 0, 1]
+    up_dy = [1, 0, -1, 0]
+    up_control = 0
+    up_before = 0
     while True:
-        nx = x + dx[direct]
-        ny = y + dy[direct]
-        if x == up and y == 0:
+        di = up_x+up_dx[up_control]
+        dj = up_y+up_dy[up_control]
+        if up_x == cleaner[0] and up_y == 0:
             break
-        if nx < 0 or nx >= r or ny < 0 or ny >= c:
-            direct += 1
-            continue
-        arr[x][y], before = before, arr[x][y]
-        x = nx
-        y = ny
-
-# 공기청정기 아래쪽 이동
-def air_down():
-    dx = [0, 1, 0, -1]
-    dy = [1, 0, -1, 0]
-    direct = 0
-    before = 0
-    x, y = down, 1
+        if 0<=di<R and 0<=dj<C:
+            board[up_x][up_y], up_before = up_before, board[up_x][up_y]
+            up_x = di
+            up_y = dj 
+        else:
+            up_control = (up_control+1)%4
+    
+    down_dx = [0, 1, 0, -1]
+    down_dy = [1, 0, -1, 0]
+    down_control = 0
+    down_before = 0
     while True:
-        nx = x + dx[direct]
-        ny = y + dy[direct]
-        if x == down and y == 0:
+        di = down_x+down_dx[down_control]
+        dj = down_y+down_dy[down_control]
+        if down_x == cleaner[1] and down_y == 0:
             break
-        if nx < 0 or nx >= r or ny < 0 or ny >= c:
-            direct += 1
-            continue
-        arr[x][y], before = before, arr[x][y]
-        x = nx
-        y = ny
+        if 0<=di<R and 0<=dj<C:
+            board[down_x][down_y], down_before = down_before, board[down_x][down_y]
+            down_x = di
+            down_y = dj 
+        else:
+            down_control = (down_control+1)%4
 
-
-for _ in range(t):
-    spread()
-    air_up()
-    air_down()
-
-answer = 0
-for i in range(r):
-    for j in range(c):
-        if arr[i][j] > 0:
-            answer += arr[i][j]
-
-print(answer)
+result = 0
+for i in range(R):
+    for j in range(C):
+        if board[i][j] > 0:
+            result += board[i][j]
+print(result)
