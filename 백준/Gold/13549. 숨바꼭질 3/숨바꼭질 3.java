@@ -51,6 +51,7 @@ public class Main {
 
             if (now.idx == K){
                 result = Math.min(result, now.time);
+                return;
             }
 
             if (now.idx*2<100001 && !visited[now.idx*2]){
