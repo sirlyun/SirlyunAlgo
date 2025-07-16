@@ -1,21 +1,17 @@
-'''
-    JadenCase
-        첫 문자가 대문자이고, 그 외의 알파벳은 소문자인 문자열
-        단, 첫 문자가 알파벳이 아닐 때 이어지는 알파벳은 소문자로 쓰기
-    s를 JadenCase로 바꾼 문자열을 반환
-'''
-
 def solution(s):
-    answer = ''
-    arr = s.split(' ')
+    """
+    JadenCase: 모든 단어의 첫 문자가 대문자이고, 그 외의 알파벳은 소문자인 문자열
+    s (문자열)
+        숫자는 단어의 첫 문자로만 나옵니다.
+        숫자로만 이루어진 단어는 없습니다.
+        공백문자가 연속해서 나올 수 있습니다.
+    :param s: 알파벳, 숫자, 공백으로 이루어진 문자열
+    :return: JadenCase로 바꾼 문자열
+    """
+    answer = ' '
+    tmp_answer = s.split(' ')
     
-    for a in range(len(arr)):
-        if arr[a]:
-            answer += arr[a][0].upper() + arr[a][1:].lower()
-        else:
-            answer += arr[a]
-        
-        if a != len(arr)-1:
-            answer += ' '
-            
-    return answer
+    for i in range(len(tmp_answer)):
+        tmp_answer[i] = tmp_answer[i].capitalize()
+    
+    return answer.join(tmp_answer)
